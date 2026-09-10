@@ -25,6 +25,21 @@ export function notificationPermission():
     : Notification.permission;
 }
 
+export function getDesktopAttentionRequester(): ((id: string) => void) | null {
+  if (
+    !("bbDesktop" in window) ||
+    typeof window.bbDesktop !== "object" ||
+    window.bbDesktop === null ||
+    !("platform" in window.bbDesktop) ||
+    window.bbDesktop.platform !== "macos" ||
+    !("requestAttention" in window.bbDesktop) ||
+    typeof window.bbDesktop.requestAttention !== "function"
+  )
+    return null;
+  const requestAttention = window.bbDesktop.requestAttention;
+  return (id) => requestAttention({ id });
+}
+
 export function createClientDelivery(navigate: (threadId: string) => void) {
   const active = new Set<Notification>();
   let disposed = false;
@@ -58,13 +73,14 @@ export function createClientDelivery(navigate: (threadId: string) => void) {
   async function deliver(payload: unknown, enabled: boolean): Promise<void> {
     const parsed = clientNotificationSchema.safeParse(payload);
     const channel = clientChannel();
+    const requestAttention = getDesktopAttentionRequester();
     if (
       !enabled ||
       disposed ||
       channel === null ||
       !parsed.success ||
       !parsed.data.channels.includes(channel) ||
-      notificationPermission() !== "granted"
+      (notificationPermission() !== "granted" && requestAttention === null)
     )
       return;
     const message = parsed.data;
@@ -81,6 +97,9 @@ export function createClientDelivery(navigate: (threadId: string) => void) {
       } catch {
         ids = [];
       }
+      try {
+        requestAttention?.(message.id);
+      } catch {}
       display(message);
       try {
         localStorage.setItem(

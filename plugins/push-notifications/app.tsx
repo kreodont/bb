@@ -13,6 +13,7 @@ import {
 import {
   clientChannel,
   createClientDelivery,
+  getDesktopAttentionRequester,
   notificationPermission,
 } from "./client.js";
 
@@ -40,6 +41,7 @@ function NotificationSettings() {
   const rpc = useRpc<typeof pushNotificationsRpcContract>();
   const { values } = useSettings();
   const channel = clientChannel();
+  const dockAvailable = getDesktopAttentionRequester() !== null;
   const [permission, setPermission] = useState(notificationPermission);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -81,9 +83,7 @@ function NotificationSettings() {
     setMessage(null);
     try {
       await rpc.call("notifications.test", { channel });
-      setMessage(
-        `Test sent to connected ${channel} clients with notification permission.`,
-      );
+      setMessage(`Test sent to connected ${channel} clients.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
     } finally {
@@ -109,7 +109,7 @@ function NotificationSettings() {
           Allow notifications
         </button>
       ) : null}
-      {permission === "granted" ? (
+      {permission === "granted" || dockAvailable ? (
         <button
           type="button"
           className="rounded-md border border-border px-3 py-2 disabled:opacity-50"
@@ -122,6 +122,12 @@ function NotificationSettings() {
       {!enabled ? (
         <p className="text-muted-foreground">
           Enable {channel} notifications above to receive updates.
+        </p>
+      ) : null}
+      {dockAvailable ? (
+        <p className="text-muted-foreground">
+          The Dock icon also bounces briefly while bb is in the background. Dock
+          alerts do not require notification permission.
         </p>
       ) : null}
       {message ? (

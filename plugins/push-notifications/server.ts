@@ -149,7 +149,7 @@ export function createPushNotificationsPlugin(
         type: "boolean",
         label: "Desktop notifications",
         description:
-          "Show system notifications while the bb desktop app is running.",
+          "Show system notifications and briefly bounce the macOS Dock icon when bb is in the background.",
         default: true,
       },
       expoPushUrl: {
@@ -225,8 +225,7 @@ export function createPushNotificationsPlugin(
       commands: [
         {
           name: "test",
-          summary:
-            "Send a test to connected web or desktop clients with permission",
+          summary: "Send a test to connected web or desktop clients",
           usage: "bb push-notifications test <web|desktop>",
         },
         {
@@ -261,7 +260,7 @@ export function createPushNotificationsPlugin(
             await sendTest(channel.data);
             return {
               exitCode: 0,
-              stdout: `Test sent to connected ${channel.data} clients with notification permission`,
+              stdout: `Test sent to connected ${channel.data} clients`,
             };
           } catch (error) {
             return {

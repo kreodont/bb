@@ -174,8 +174,13 @@ and `desktopEnabled` booleans default to true. Change each with
 channel key). Web and desktop clients receive system notifications while a bb
 tab or window remains open; browsers require HTTPS or localhost and per-device
 notification permission. Settings → Push notifications offers permission and
-test controls. `bb push-notifications test <web|desktop>` broadcasts a test to
-connected, permitted clients; it does not confirm OS display.
+test controls. On macOS, `desktopEnabled` also enables a brief Dock bounce
+while bb is in the background. Dock alerts require an open bb window but no
+banner permission; returning to bb cancels them. The desktop shell combines
+simultaneous alerts and deduplicates requests across windows.
+`bb push-notifications test <web|desktop>` broadcasts a test to connected
+clients; it does not confirm OS display. To test the Dock, run the desktop
+test from a terminal outside bb while bb is in the background.
 
 The builtin Keep Awake plugin has one autosaving configuration page with an
 enable switch and an all-or-selected host picker. On selected macOS hosts it

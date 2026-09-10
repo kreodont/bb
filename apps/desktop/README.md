@@ -328,3 +328,17 @@ writes a PID file so the next launch can reap a stale Electron-owned `bb-app`
 launcher. Hard crashes such as process aborts, segfaults, or kernel-level kills
 cannot run cleanup in the crashing process; the startup PID-file reap is the
 recovery path for those cases.
+
+## Dock attention on macOS
+
+When an unread visible thread finishes, needs input, or fails, the Push
+notifications plugin requests a brief Dock bounce while bb is in the
+background. The existing Desktop notifications switch controls this behavior.
+Dock alerts work without banner permission and require at least one bb window
+to stay open. Requests are deduplicated across windows, limited to one per
+second, and canceled when bb becomes active or quits.
+
+Switch to another app and run `bb push-notifications test desktop` to test
+the installed desktop shell. For a source checkout, target its dev server with
+`pnpm bb:dev push-notifications test desktop` after loading the environment
+printed by `scripts/bb-dev-app env`.

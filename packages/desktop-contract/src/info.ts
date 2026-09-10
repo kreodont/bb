@@ -34,6 +34,13 @@ export type BbDesktopWindowState = z.infer<typeof bbDesktopWindowStateSchema>;
 export const bbDesktopThemeSchema = z.enum(["system", "light", "dark"]);
 export type BbDesktopTheme = z.infer<typeof bbDesktopThemeSchema>;
 
+export const bbDesktopAttentionRequestSchema = z
+  .object({ id: z.string().trim().min(1).max(256) })
+  .strict();
+export type BbDesktopAttentionRequest = z.infer<
+  typeof bbDesktopAttentionRequestSchema
+>;
+
 export type BbDesktopInfoChangeHandler = (info: BbDesktopInfo) => void;
 export type BbDesktopInfoUnsubscribe = () => void;
 export type BbDesktopWindowStateChangeHandler = (
@@ -60,5 +67,6 @@ export interface BbDesktopApi extends BbDesktopInfo {
   ): BbDesktopInfoUnsubscribe;
   openExternalUrl(url: string): void;
   openServerDaemonLogs?(): Promise<void>;
+  requestAttention?(request: BbDesktopAttentionRequest): void;
   setTheme(theme: BbDesktopTheme): void;
 }
