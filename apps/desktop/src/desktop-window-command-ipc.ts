@@ -1,4 +1,6 @@
 export const BB_DESKTOP_OPEN_NEW_TAB_CHANNEL = "bb-desktop:open-new-tab";
+export const BB_DESKTOP_REQUEST_ATTENTION_CHANNEL =
+  "bb-desktop:request-attention";
 export const BB_DESKTOP_APP_COMMAND_CHANNEL = "bb-desktop:app-command";
 export const BB_DESKTOP_OPEN_SERVER_DAEMON_LOGS_CHANNEL =
   "bb-desktop:open-server-daemon-logs";

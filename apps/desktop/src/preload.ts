@@ -6,6 +6,7 @@ import {
 } from "@bb/host-daemon-contract";
 import { z } from "zod";
 import {
+  bbDesktopAttentionRequestSchema,
   bbDesktopBrowserFindResultSchema,
   bbDesktopBrowserOpenTabRequestSchema,
   bbDesktopBrowserScopedOpenTabRequestSchema,
@@ -83,6 +84,7 @@ import {
   BB_DESKTOP_GET_WINDOW_STATE_CHANNEL,
   BB_DESKTOP_OPEN_NEW_TAB_CHANNEL,
   BB_DESKTOP_OPEN_SERVER_DAEMON_LOGS_CHANNEL,
+  BB_DESKTOP_REQUEST_ATTENTION_CHANNEL,
   BB_DESKTOP_WINDOW_STATE_CHANGED_CHANNEL,
 } from "./desktop-window-command-ipc.js";
 import {
@@ -402,6 +404,11 @@ const bbDesktopApi: BbDesktopApi = {
   },
   async openServerDaemonLogs(): Promise<void> {
     await ipcRenderer.invoke(BB_DESKTOP_OPEN_SERVER_DAEMON_LOGS_CHANNEL);
+  },
+  requestAttention(request): void {
+    const parsed = bbDesktopAttentionRequestSchema.safeParse(request);
+    if (parsed.success)
+      ipcRenderer.send(BB_DESKTOP_REQUEST_ATTENTION_CHANNEL, parsed.data);
   },
   setTheme(theme: BbDesktopTheme): void {
     ipcRenderer.send(BB_DESKTOP_SET_THEME_CHANNEL, theme);

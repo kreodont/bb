@@ -10,6 +10,36 @@ afterEach(() => {
 });
 
 describe("device notification settings", () => {
+  it("allows testing macOS Dock alerts when banners are blocked", async () => {
+    vi.stubGlobal("bbDesktop", {
+      platform: "macos",
+      requestAttention: vi.fn(),
+    });
+    vi.stubGlobal("Notification", { permission: "denied" });
+    vi.stubGlobal("isSecureContext", true);
+    const view = renderSlot(
+      app.settingsSections[0]!,
+      {},
+      {
+        settings: { desktopEnabled: true },
+        rpc: { "notifications.test": () => ({ ok: true }) },
+      },
+    );
+    expect(
+      await view.findByText(
+        /Dock alerts do not require notification permission/,
+      ),
+    ).toBeTruthy();
+    fireEvent.click(
+      await view.findByRole("button", { name: "Send test notification" }),
+    );
+    await waitFor(() =>
+      expect(view.inspection.rpcCalls).toEqual([
+        { method: "notifications.test", input: { channel: "desktop" } },
+      ]),
+    );
+  });
+
   it("requests permission only on a click and uses the server test route", async () => {
     const requestPermission = vi.fn(async () => "granted");
     vi.stubGlobal("Notification", { permission: "default", requestPermission });

@@ -6,14 +6,16 @@ Mobile devices receive push messages through Expo, including when the app is clo
 
 Click a notification to open its thread. Events arriving together are combined, with pending questions taking priority. Read, archived, deleted, and hidden threads are suppressed. Multiple tabs or windows of the same origin and client type deduplicate delivery when browser storage and Web Locks are available.
 
+On macOS, the desktop app also briefly bounces its Dock icon while bb is in the background. Returning to bb cancels the request. Dock alerts do not require banner permission, share the **Desktop notifications** switch, and require at least one bb app window to remain open. The desktop shell deduplicates requests across windows and combines bursts of alerts. Older desktop shells continue to show their existing system notifications without Dock alerts.
+
 ## Settings
 
 - `mobileEnabled` / **Mobile notifications**: send to registered phones and tablets. Default: true.
 - `webEnabled` / **Web notifications**: notify connected browsers with permission. Default: true.
-- `desktopEnabled` / **Desktop notifications**: notify running desktop clients. Default: true.
+- `desktopEnabled` / **Desktop notifications**: notify running desktop clients and briefly bounce the macOS Dock icon in the background. Default: true.
 - `expoPushUrl` / **Expo push relay URL**: mobile relay endpoint. Defaults to `https://exp.host/--/api/v2/push/send`.
 
-Channel switches apply to this server and save immediately. Browser permission is granted separately on each device with **Allow notifications**. If blocked, change the browser or operating system notification settings. **Send test notification** sends to all connected, permitted clients of the current type. A successful test request confirms broadcast, not OS display; system settings and Focus modes can suppress banners.
+Channel switches apply to this server and save immediately. Browser permission is granted separately on each device with **Allow notifications**. If blocked, change the browser or operating system notification settings. **Send test notification** sends to all connected clients of the current type. Banners require permission; macOS Dock alerts do not. A successful test request confirms broadcast, not OS display; system settings and Focus modes can suppress banners. To test the Dock, switch away from bb and run `bb push-notifications test desktop` in a terminal.
 
 ## CLI and SDK
 

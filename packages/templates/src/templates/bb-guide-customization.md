@@ -199,8 +199,13 @@ push-notifications` to stop delivery. Change the relay URL with `bb plugin
 config push-notifications set expoPushUrl <url>`. Add `--json` to `list` or
 `status` for machine-readable output. The list returns token suffixes only.
 The three channel switches default to true and apply immediately across this
-server. `test` broadcasts to all connected clients of the selected type with
-permission; OS notification settings still control whether a banner appears.
+server. On macOS, `desktopEnabled` also enables a brief Dock bounce while bb
+is in the background, without requiring banner permission. At least one bb
+window must remain open. Returning to bb cancels the request; repeated and
+simultaneous alerts are combined. To test, switch to a terminal outside bb
+and run `bb push-notifications test desktop`. `test` broadcasts to all
+connected clients of the selected type; permission and OS notification
+settings still control whether a banner appears.
 
 Host files and voice transcription
 

@@ -156,6 +156,7 @@ import {
   BB_DESKTOP_GET_WINDOW_STATE_CHANNEL,
   BB_DESKTOP_OPEN_NEW_TAB_CHANNEL,
   BB_DESKTOP_OPEN_SERVER_DAEMON_LOGS_CHANNEL,
+  BB_DESKTOP_REQUEST_ATTENTION_CHANNEL,
   BB_DESKTOP_WINDOW_STATE_CHANGED_CHANNEL,
   CLOSE_WINDOW_REQUEST_TIMEOUT_MS,
 } from "./desktop-window-command-ipc.js";
@@ -184,6 +185,8 @@ import {
 import { parseDesktopSystemConfig } from "./desktop-system-config.js";
 import { ensurePackagedUserShellPath } from "./desktop-shell-path.js";
 import { resolveDesktopReloadShortcut } from "./desktop-reload-shortcut.js";
+import { createDesktopAttention } from "./desktop-attention.js";
+import { createDesktopAttentionHandler } from "./desktop-attention-ipc.js";
 import {
   createLogTailer,
   createLogLineBuffer,
@@ -308,6 +311,7 @@ const logViewerCopyRequestSchema = z
   .strict();
 
 let desktopWindowFactory: DesktopWindowFactory | null = null;
+let desktopAttention: ReturnType<typeof createDesktopAttention> | null = null;
 let desktopBrowserViewManager: DesktopBrowserViewManager | null = null;
 let desktopBrowserBroker: DesktopBrowserBroker | null = null;
 let desktopBrowserBrokerClient: ReturnType<
@@ -1560,6 +1564,7 @@ function handleBeforeQuit(event: Event): void {
 }
 
 async function finishQuit(): Promise<void> {
+  desktopAttention?.dispose();
   desktopBrowserBrokerClient?.stop();
   desktopBrowserBroker?.dispose();
   stopSystemConfigSync();
@@ -1572,6 +1577,16 @@ async function finishQuit(): Promise<void> {
 }
 
 function registerDesktopUpdateIpc(): void {
+  ipcMain.on(
+    BB_DESKTOP_REQUEST_ATTENTION_CHANNEL,
+    createDesktopAttentionHandler({
+      getApplicationUrl: () => currentWindowUrl,
+      isApplicationWindow: (id) => applicationWindowWebContentsIds.has(id),
+      notify: (id) => {
+        desktopAttention?.notify(id);
+      },
+    }),
+  );
   ipcMain.handle(BB_DESKTOP_GET_INFO_CHANNEL, () => {
     return getCurrentDesktopInfo();
   });
@@ -2015,10 +2030,14 @@ async function runDesktopApp(): Promise<void> {
     }
   });
   app.on("did-become-active", () => {
+    desktopAttention?.cancel();
     void desktopUpdateService?.checkAfterActive();
     void desktopAutoUpdateService?.checkAfterActive();
     refreshRemoteSystemConfig?.();
     connectSessionRenewal?.renewIfDue();
+  });
+  app.on("browser-window-focus", () => {
+    desktopAttention?.cancel();
   });
   app.on("browser-window-created", (_event, browserWindow) => {
     if (desktopBrowserViewManager === null) {
@@ -2045,6 +2064,10 @@ async function runDesktopApp(): Promise<void> {
   });
 
   await app.whenReady();
+  desktopAttention = createDesktopAttention({
+    dock: process.platform === "darwin" ? (app.dock ?? null) : null,
+    isFocused: () => BrowserWindow.getFocusedWindow() !== null,
+  });
   if (app.isPackaged) {
     await session.defaultSession.clearCache();
   }
