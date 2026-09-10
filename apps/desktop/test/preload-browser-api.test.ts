@@ -45,6 +45,7 @@ import {
   BB_DESKTOP_GET_WINDOW_STATE_CHANNEL,
   BB_DESKTOP_OPEN_NEW_TAB_CHANNEL,
   BB_DESKTOP_OPEN_SERVER_DAEMON_LOGS_CHANNEL,
+  BB_DESKTOP_REQUEST_ATTENTION_CHANNEL,
   BB_DESKTOP_WINDOW_STATE_CHANGED_CHANNEL,
 } from "../src/desktop-window-command-ipc.js";
 const electronMock = vi.hoisted(() => {
@@ -171,6 +172,19 @@ describe("desktop preload browser API", () => {
   beforeEach(async () => {
     api = await loadPreload();
   }, 30_000);
+
+  it("validates attention requests before forwarding them to the main process", () => {
+    expect(api.requestAttention).toBeTypeOf("function");
+    api.requestAttention?.({ id: "notice-1" });
+    api.requestAttention?.({ id: " " });
+    api.requestAttention?.({ id: "a".repeat(257) });
+    expect(electronMock.sendCalls).toEqual([
+      {
+        channel: BB_DESKTOP_REQUEST_ATTENTION_CHANNEL,
+        payload: { id: "notice-1" },
+      },
+    ]);
+  });
 
   it("exposes only the typed browser commands and forwards them over fixed channels", async () => {
     const attachRequest = {

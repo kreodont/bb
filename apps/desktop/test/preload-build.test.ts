@@ -79,8 +79,11 @@ function renderSmokePage(expectedDesktopVersion: string): string {
       reason = "missing window.bbDesktop";
     } else if (typeof window.bbDesktop.getInfo !== "function") {
       reason = "missing window.bbDesktop.getInfo";
+    } else if (typeof window.bbDesktop.requestAttention !== "function") {
+      reason = "missing window.bbDesktop.requestAttention";
     } else {
       const info = await window.bbDesktop.getInfo();
+      window.bbDesktop.requestAttention({ id: "preload-smoke" });
       const expectedVersion = ${JSON.stringify(expectedDesktopVersion)};
       ok = window.bbDesktop.version === expectedVersion && info.version === expectedVersion;
       reason = ok ? "" : "unexpected desktop version";

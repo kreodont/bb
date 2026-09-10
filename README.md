@@ -8,6 +8,12 @@
 
 # bb
 
+> This fork adds brief macOS Dock alerts when a thread finishes, needs input,
+> or fails while bb is in the background. Build this branch with
+> `pnpm install --frozen-lockfile` and `pnpm dev:desktop` to use them.
+> See [Dock attention](apps/desktop/README.md#dock-attention-on-macos) for
+> behavior, settings, and verification.
+
 [![npm version](https://img.shields.io/npm/v/bb-app.svg)](https://www.npmjs.com/package/bb-app)
 [![Join Discord](https://img.shields.io/badge/Discord-Join%20server-5865F2?logo=discord&logoColor=white)](https://discord.gg/kvBU6tJhcJ)
 

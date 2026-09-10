@@ -37,6 +37,56 @@ afterEach(() => {
 });
 
 describe("client system notifications", () => {
+  it("requests macOS Dock attention without banner permission and deduplicates windows", async () => {
+    const requestAttention = vi.fn();
+    vi.stubGlobal("bbDesktop", { platform: "macos", requestAttention });
+    TestNotification.permission = "denied";
+    const first = createClientDelivery(vi.fn());
+    const second = createClientDelivery(vi.fn());
+    const desktopMessage = { ...message, channels: ["desktop"] };
+    await first.deliver(desktopMessage, true);
+    await second.deliver(desktopMessage, true);
+    expect(requestAttention).toHaveBeenCalledExactlyOnceWith({
+      id: message.id,
+    });
+    expect(TestNotification.instances).toHaveLength(0);
+    first.dispose();
+    await first.deliver({ ...desktopMessage, id: "after-disposal" }, true);
+    await second.deliver({ ...desktopMessage, id: "disabled" }, false);
+    await second.deliver(message, true);
+    await second.deliver({ ...desktopMessage, threadId: 3 }, true);
+    expect(requestAttention).toHaveBeenCalledTimes(1);
+    second.dispose();
+  });
+
+  it("keeps banners working with older desktop shells and a failing attention bridge", async () => {
+    vi.stubGlobal("bbDesktop", { platform: "macos" });
+    const delivery = createClientDelivery(vi.fn());
+    await delivery.deliver({ ...message, channels: ["desktop"] }, true);
+    vi.stubGlobal("bbDesktop", {
+      platform: "macos",
+      requestAttention: () => {
+        throw new Error("Bridge unavailable");
+      },
+    });
+    await delivery.deliver(
+      { ...message, id: "two", channels: ["desktop"] },
+      true,
+    );
+    expect(TestNotification.instances).toHaveLength(2);
+    delivery.dispose();
+  });
+
+  it("does not call Dock attention on Linux", async () => {
+    const requestAttention = vi.fn();
+    vi.stubGlobal("bbDesktop", { platform: "linux", requestAttention });
+    const delivery = createClientDelivery(vi.fn());
+    await delivery.deliver({ ...message, channels: ["desktop"] }, true);
+    expect(requestAttention).not.toHaveBeenCalled();
+    expect(TestNotification.instances).toHaveLength(1);
+    delivery.dispose();
+  });
+
   it.each([
     { platform: "macos", icon: undefined },
     { platform: "linux", icon: "http://localhost:3000/icon-192.png" },
