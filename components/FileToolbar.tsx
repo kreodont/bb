@@ -61,7 +61,7 @@ export function FileToolbar({
       </button>
       <label
         className="flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-muted-foreground"
-        title="Save this file after 1 second without typing. Off by default for each opened file."
+        title="Save this file after 1 second without typing. On by default. Turn off to save manually."
       >
         <input
           type="checkbox"

@@ -70,7 +70,7 @@ function MonacoFileOpener({
 
   const controllerRef = useRef<SaveController | null>(null);
   const refreshingRef = useRef(false);
-  const [autoSave, setAutoSave] = useState(false);
+  const [autoSave, setAutoSave] = useState(true);
   const saveStateRef = useRef<SaveState>({ kind: "clean" });
 
   const [saveState, setSaveStateValue] = useState<SaveState>({ kind: "clean" });
@@ -201,7 +201,7 @@ function MonacoFileOpener({
     let disposed = false;
     setStatus({ kind: "loading" });
     setSaveState({ kind: "clean" });
-    setAutoSave(false);
+    setAutoSave(true);
     setPendingOpen(null);
     setPendingDiscard(false);
     refreshingRef.current = false;

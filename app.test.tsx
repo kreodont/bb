@@ -206,7 +206,7 @@ it("saves from the visible button using the same path and version as the keyboar
   const write = vi.fn(() => ({ outcome: "written", sha256: "saved" }));
   mount(null, () => file, write);
   await waitFor(() => expect(create).toHaveBeenCalledOnce());
-  expect(screen.getByRole("checkbox", { name: "Auto-save" }).getAttribute("checked")).toBeNull();
+  expect(screen.getByRole("checkbox", { name: "Auto-save" })).toHaveProperty("checked", true);
   changeContent("clicked save");
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
   await waitFor(() => expect(write).toHaveBeenCalledWith({ path: "target.ts", source: base.source, content: "clicked save", expectedSha256: "hash" }));
@@ -216,21 +216,23 @@ it("saves from the visible button using the same path and version as the keyboar
   expect(write).toHaveBeenLastCalledWith({ path: "target.ts", source: base.source, content: "keyboard save", expectedSha256: "saved" });
 });
 
-it("auto-saves only after enabling the checkbox", async () => {
+it("auto-saves by default, allows opting out, and resets the default for another file", async () => {
   const write = vi.fn(() => ({ outcome: "written", sha256: "saved" }));
   const slot = mount(null, () => file, write);
   await waitFor(() => expect(create).toHaveBeenCalledOnce());
   vi.useFakeTimers();
   try {
+    expect(screen.getByRole("checkbox", { name: "Auto-save" })).toHaveProperty("checked", true);
     changeContent("automatic save");
-    await act(async () => vi.advanceTimersByTimeAsync(2000));
-    expect(write).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("checkbox", { name: "Auto-save" }));
     await act(async () => vi.advanceTimersByTimeAsync(1000));
-    expect(write).toHaveBeenCalledWith(expect.objectContaining({ content: "automatic save" }));
+    expect(write).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ content: "automatic save" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Auto-save" }));
+    changeContent("manual save only");
+    await act(async () => vi.advanceTimersByTimeAsync(2000));
+    expect(write).toHaveBeenCalledTimes(1);
     slot.lifecycle.rerender(<Component {...base} path="another.ts" />);
     await act(async () => vi.advanceTimersByTimeAsync(0));
-    expect(screen.getByRole("checkbox", { name: "Auto-save" })).toHaveProperty("checked", false);
+    expect(screen.getByRole("checkbox", { name: "Auto-save" })).toHaveProperty("checked", true);
   } finally {
     slot.lifecycle.unmount();
     vi.useRealTimers();

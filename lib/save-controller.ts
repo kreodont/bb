@@ -12,7 +12,7 @@ type WriteResult =
 export class SaveController {
   private state: SaveState = { kind: "clean" };
   private sha256: string;
-  private autoSave = false;
+  private autoSave = true;
   private disposed = false;
   private paused = false;
   private timer: ReturnType<typeof setTimeout> | null = null;

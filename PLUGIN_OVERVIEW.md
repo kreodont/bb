@@ -1,6 +1,6 @@
 ## Save without a shortcut
 
-A visible **Save** button sits beside the file path. The usual **⌘S / Ctrl+S** shortcut still works. Enable **Auto-save** for the current file to save after one second without typing; it starts off each time a file opens.
+A visible **Save** button sits beside the file path. The usual **⌘S / Ctrl+S** shortcut still works. **Auto-save** is on by default and saves after one second without typing. Turn it off for the current file to save manually.
 
 Edits made while a write is running remain unsaved until the next write succeeds. If another process changes the file, saving pauses and offers **Reload** or **Overwrite**. A failed write keeps your changes in the editor and can be retried with **Save**.
 

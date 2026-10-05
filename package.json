@@ -1,9 +1,9 @@
 {
   "name": "bb-plugin-file-editor-save",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "type": "module",
-  "description": "Edit files with syntax highlighting, a Save button, and optional auto-save with conflict protection.",
+  "description": "Edit files with syntax highlighting, a Save button, and auto-save with conflict protection.",
   "license": "MIT",
   "homepage": "https://github.com/kreodont/bb/tree/file-editor-save-addon",
   "bugs": {
@@ -27,7 +27,7 @@
   },
   "bb": {
     "name": "File Editor",
-    "description": "Edit files with syntax highlighting, a Save button, and optional auto-save with conflict protection.",
+    "description": "Edit files with syntax highlighting, a Save button, and auto-save with conflict protection.",
     "branding": {
       "icon": "Code"
     },

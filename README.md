@@ -1,11 +1,11 @@
 # File Editor with Save and Auto-save
 
-A standalone build of BB's existing Monaco File Editor, with a visible **Save** button and optional **Auto-save**. Based on `get-bb/bb` at `desktop-v0.43.4` (`9b8c1d3457b00359af206e3fd423fe50520182c2`). The original MIT license is included.
+A standalone build of BB's existing Monaco File Editor, with a visible **Save** button and **Auto-save** enabled by default. Based on `get-bb/bb` at `desktop-v0.43.4` (`9b8c1d3457b00359af206e3fd423fe50520182c2`). The original MIT license is included.
 
 ## Saving
 
 - Click **Save**, or use **⌘S** on macOS / **Ctrl+S** on Windows and Linux.
-- **Auto-save** is off by default for each opened file. Turn it on to save after one second without typing. It is a temporary preference for that editor, not a global setting.
+- **Auto-save** is on by default for each opened file and saves after one second without typing. Turn it off to save manually. It is a temporary preference for that editor, not a global setting.
 - Writes are serialized. Changes typed during a save remain unsaved until the next write succeeds.
 - Saving identical content that is already on disk succeeds, including retries after a lost response.
 - If the file changed on disk to different content, saving stops. Choose **Reload** to discard local changes or **Overwrite** to replace the disk version deliberately.

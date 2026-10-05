@@ -18,8 +18,9 @@ function setup() {
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-it("does not save without opt-in, and manual save uses the loaded hash", async () => {
+it("allows disabling auto-save and saving manually with the loaded hash", async () => {
   const s = setup();
+  s.controller.setAutoSave(false);
   s.edit("manual");
   await vi.advanceTimersByTimeAsync(5000);
   expect(s.write).not.toHaveBeenCalled();
@@ -65,6 +66,7 @@ it("serializes saves and preserves edits typed during a write", async () => {
 
 it("keeps newer edits dirty with auto-save off", async () => {
   const s = setup();
+  s.controller.setAutoSave(false);
   const pending = deferred<{ outcome: "written"; sha256: string }>();
   s.write.mockImplementationOnce(() => pending.promise);
   s.edit("first");
@@ -154,4 +156,17 @@ it("ignores an in-flight result after disposal without reading the disposed edit
   await vi.advanceTimersByTimeAsync(5000);
   expect(s.onState).not.toHaveBeenCalled();
   expect(s.write).toHaveBeenCalledTimes(1);
+});
+
+
+it("auto-saves edits by default but never writes an untouched file", async () => {
+  const s = setup();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(s.write).not.toHaveBeenCalled();
+  s.edit("default auto-save");
+  await vi.advanceTimersByTimeAsync(999);
+  expect(s.write).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(s.write).toHaveBeenCalledExactlyOnceWith("default auto-save", "original-hash");
+  expect(s.onState).toHaveBeenLastCalledWith({ kind: "clean" });
 });
