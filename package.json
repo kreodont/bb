@@ -1,0 +1,84 @@
+{
+  "name": "bb-plugin-file-editor-save",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "Edit files with syntax highlighting, a Save button, and optional auto-save with conflict protection.",
+  "license": "MIT",
+  "homepage": "https://github.com/kreodont/bb/tree/file-editor-save-addon",
+  "bugs": {
+    "url": "https://github.com/kreodont/bb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kreodont/bb.git"
+  },
+  "files": [
+    "dist",
+    "server.ts",
+    "app.tsx",
+    "components",
+    "lib",
+    "README.md"
+  ],
+  "engines": {
+    "bb": ">=0.43.4",
+    "bbPluginSdk": ">=0.5.9"
+  },
+  "bb": {
+    "name": "File Editor",
+    "description": "Edit files with syntax highlighting, a Save button, and optional auto-save with conflict protection.",
+    "branding": {
+      "icon": "Code"
+    },
+    "server": "./server.ts",
+    "app": "./app.tsx"
+  },
+  "keywords": [
+    "bb-plugin"
+  ],
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc6 --noEmit -p tsconfig.json",
+    "build:monaco": "node scripts/stage-assets.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.56.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@get-bb/plugin-sdk": "0.5.9",
+    "@pierre/diffs": "^1.2.9",
+    "@radix-ui/react-alert-dialog": "^1.1.19",
+    "@radix-ui/react-context-menu": "^2.3.3",
+    "@radix-ui/react-dialog": "^1.1.19",
+    "@radix-ui/react-dropdown-menu": "^2.1.20",
+    "@radix-ui/react-hover-card": "^1.1.19",
+    "@radix-ui/react-menubar": "^1.1.20",
+    "@radix-ui/react-navigation-menu": "^1.2.18",
+    "@radix-ui/react-popover": "^1.1.19",
+    "@radix-ui/react-select": "^2.3.3",
+    "@radix-ui/react-tooltip": "^1.2.12",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "better-sqlite3": "12.11.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cron-parser": "^5.5.0",
+    "esbuild": "^0.28.0",
+    "hono": "^4.11.9",
+    "jsdom": "^29.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sonner": "^1.7.4",
+    "tailwind-merge": "^3.4.0",
+    "turbo": "^2.10.12",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "vaul": "^1.1.2",
+    "vitest": "^4.1.1"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
