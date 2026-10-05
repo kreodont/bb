@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { createHash } from "node:crypto";
+import type { BbPluginApi } from "@get-bb/plugin-sdk";
 import { createFakePluginHost } from "@get-bb/plugin-sdk/testing";
 import plugin from "./server";
 
@@ -23,7 +25,7 @@ async function setup() {
     paths: [{ path: "notes/document.txt", kind: "file" }],
     truncated: false,
   }));
-  const write = vi.fn(() => ({ outcome: "written", sha256: "updated" }));
+  const write = vi.fn<BbPluginApi["sdk"]["files"]["write"]>().mockResolvedValue({ outcome: "written", sha256: "updated", sizeBytes: 11 });
   const { bb, harness } = createFakePluginHost({
     pluginId: "monaco-editor",
     sdk: {
@@ -91,5 +93,43 @@ describe("thread storage host routing", () => {
       expectedSha256: "original",
     });
     expect(result).toEqual({ outcome: "written", sha256: "updated" });
+  });
+});
+
+
+describe("save conflicts", () => {
+  it("explicit overwrite does not request create-only semantics", async () => {
+    const { harness, write } = await setup();
+    write.mockImplementation(async (input) => input.expectedSha256 === undefined
+      ? { outcome: "written", sha256: "overwritten", sizeBytes: 11 }
+      : { outcome: "conflict", currentSha256: "existing-file" });
+    const result = await harness.callRpc("write", {
+      source, path: "notes/document.txt", content: "my changes", expectedSha256: null,
+    });
+    expect(result).toEqual({ outcome: "written", sha256: "overwritten" });
+    expect(write.mock.calls[0]?.[0]).not.toHaveProperty("expectedSha256");
+  });
+
+  it("accepts an already saved identical buffer without another write", async () => {
+    const { harness, write } = await setup();
+    const content = "Previously saved text: café\r\n";
+    const sha256 = createHash("sha256").update(content, "utf8").digest("hex");
+    write.mockResolvedValue({ outcome: "conflict", currentSha256: sha256 });
+    const result = await harness.callRpc("write", {
+      source, path: "notes/document.txt", content, expectedSha256: "old-version",
+    });
+    expect(result).toEqual({ outcome: "written", sha256 });
+    expect(write).toHaveBeenCalledOnce();
+  });
+
+  it.each(["different-version", null])("keeps a real conflict (%s) and never overwrites automatically", async (currentSha256) => {
+    const { harness, write } = await setup();
+    write.mockResolvedValue({ outcome: "conflict", currentSha256 });
+    const result = await harness.callRpc("write", {
+      source, path: "notes/document.txt", content: "my changes", expectedSha256: "old-version",
+    });
+    expect(result).toEqual({ outcome: "conflict", currentSha256 });
+    expect(write).toHaveBeenCalledOnce();
+    expect(write.mock.calls[0]?.[0].expectedSha256).toBe("old-version");
   });
 });

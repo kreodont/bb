@@ -1,4 +1,5 @@
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineRpcContract, type BbPluginApi } from "@get-bb/plugin-sdk";
@@ -264,8 +265,14 @@ export default async function plugin(bb: BbPluginApi) {
         ...target,
         content,
         contentEncoding: "utf8",
-        expectedSha256,
+        ...(expectedSha256 === null ? {} : { expectedSha256 }),
       });
+      if (
+        result.outcome === "conflict" &&
+        result.currentSha256 === createHash("sha256").update(content, "utf8").digest("hex")
+      ) {
+        return { outcome: "written" as const, sha256: result.currentSha256 };
+      }
       return result.outcome === "written"
         ? { outcome: "written" as const, sha256: result.sha256 }
         : { outcome: "conflict" as const, currentSha256: result.currentSha256 };

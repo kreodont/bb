@@ -7,7 +7,8 @@ A standalone build of BB's existing Monaco File Editor, with a visible **Save** 
 - Click **Save**, or use **⌘S** on macOS / **Ctrl+S** on Windows and Linux.
 - **Auto-save** is off by default for each opened file. Turn it on to save after one second without typing. It is a temporary preference for that editor, not a global setting.
 - Writes are serialized. Changes typed during a save remain unsaved until the next write succeeds.
-- If the file changed on disk, saving stops. Choose **Reload** to discard local changes or **Overwrite** to replace the disk version deliberately.
+- Saving identical content that is already on disk succeeds, including retries after a lost response.
+- If the file changed on disk to different content, saving stops. Choose **Reload** to discard local changes or **Overwrite** to replace the disk version deliberately.
 - After a write error, changes remain in the editor. Auto-save pauses; click **Save** to retry.
 - Wait for saving to finish before closing the tab. Closing does not flush pending edits.
 
