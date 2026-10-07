@@ -46,7 +46,7 @@ pnpm exec turbo run typecheck test build
 bb plugin types --check .
 ```
 
-`build` stages Monaco's lazy-loaded assets and then runs `bb plugin build`. Generated plugin and Monaco bundles are committed so a managed Git install does not need a build toolchain. The package uses BB's runtime React/UI shims and the pinned SDK declarations.
+`build` stages Monaco's lazy-loaded assets and then runs `bb plugin build`. Generated plugin and Monaco bundles are committed so a managed Git install does not need a build toolchain. Opening a file uses those shipped assets without comparing file timestamps or rebuilding them. Run the build explicitly after changing editor sources in a development checkout. The package uses BB's runtime React/UI shims and the pinned SDK declarations.
 
 ## SDK and CLI
 

@@ -96,6 +96,24 @@ describe("thread storage host routing", () => {
   });
 });
 
+it("serves packaged editor assets on first open, reuses the lease and reopens after a plugin restart", async () => {
+  const createPreview = vi.fn((_input: Parameters<BbPluginApi["sdk"]["files"]["createPreview"]>[0]) => ({ baseUrl: "https://preview.test/editor", expiresAtMs: Date.now() + 60 * 60 * 1000 }));
+  const { bb, harness } = createFakePluginHost({ pluginId: "file-editor-save", sdk: { files: { createPreview } } });
+  try {
+    await plugin(bb);
+    const first = await harness.behavior.callRpc("assets", null);
+    expect(first).toMatchObject({ baseUrl: "https://preview.test/editor" });
+    expect(createPreview.mock.calls[0]?.[0]).toMatchObject({ rootPath: expect.stringMatching(/dist[/\\]monaco$/) });
+    expect(await harness.behavior.callRpc("assets", null)).toEqual(first);
+    expect(createPreview).toHaveBeenCalledTimes(1);
+    const restarted = await harness.lifecycle.reload(plugin);
+    try {
+      expect(await restarted.harness.behavior.callRpc("assets", null)).toMatchObject({ baseUrl: "https://preview.test/editor" });
+      expect(createPreview).toHaveBeenCalledTimes(2);
+    } finally { await restarted.harness.lifecycle.dispose(); }
+  } finally { await harness.lifecycle.dispose(); }
+});
+
 
 describe("save conflicts", () => {
   it("explicit overwrite does not request create-only semantics", async () => {

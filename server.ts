@@ -1,7 +1,7 @@
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { monacoAssetDirectory } from "./lib/monaco-assets.js";
 import { defineRpcContract, type BbPluginApi } from "@get-bb/plugin-sdk";
 import { z } from "zod";
 
@@ -73,53 +73,6 @@ export const rpcContract = defineRpcContract({
   },
 });
 
-function isBundleStale(moduleDir: string, bundleDir: string): boolean {
-  const builtAtMs = statSync(path.join(bundleDir, "editor.js")).mtimeMs;
-  const entryDir = path.join(moduleDir, "monaco-bundle");
-  if (!existsSync(entryDir)) return false;
-
-  const inputs = [
-    path.join(moduleDir, "scripts", "stage-assets.mjs"),
-    ...readdirSync(entryDir).map((name) => path.join(entryDir, name)),
-    path.join(moduleDir, "package.json"),
-  ];
-  return inputs.some(
-    (input) => existsSync(input) && statSync(input).mtimeMs > builtAtMs,
-  );
-}
-
-async function ensureMonacoBundleDir(
-  log: (message: string) => void,
-): Promise<string> {
-  const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-  const candidates = [
-    path.join(moduleDir, "monaco"),
-    path.join(moduleDir, "dist", "monaco"),
-  ];
-  const built = candidates.find((candidate) =>
-    existsSync(path.join(candidate, "editor.js")),
-  );
-  if (built !== undefined && !isBundleStale(moduleDir, built)) return built;
-
-  log(
-    built === undefined
-      ? "Monaco bundle missing; building it (first run in a source checkout)"
-      : "Monaco bundle is older than its sources; rebuilding it",
-  );
-  const script = new URL("./scripts/stage-assets.mjs", import.meta.url).href;
-  await import(script);
-
-  const staged = candidates.find((candidate) =>
-    existsSync(path.join(candidate, "editor.js")),
-  );
-  if (staged === undefined) {
-    throw new Error(
-      "could not build the Monaco bundle; run `pnpm --filter bb-plugin-monaco-editor build:monaco`",
-    );
-  }
-  return staged;
-}
-
 export default async function plugin(bb: BbPluginApi) {
   let assetLease: { baseUrl: string; expiresAtMs: number } | null = null;
 
@@ -129,9 +82,7 @@ export default async function plugin(bb: BbPluginApi) {
       assetLease === null ||
       assetLease.expiresAtMs - now < ASSET_LEASE_REFRESH_MARGIN_MS
     ) {
-      const bundleDir = await ensureMonacoBundleDir((message) =>
-        bb.log.info(message),
-      );
+      const bundleDir = monacoAssetDirectory(path.dirname(fileURLToPath(import.meta.url)));
       assetLease = await bb.sdk.files.createPreview({
         rootPath: bundleDir,
         ttlMs: ASSET_LEASE_TTL_MS,

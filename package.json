@@ -1,6 +1,6 @@
 {
   "name": "bb-plugin-file-editor-save",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "description": "Edit files with syntax highlighting, a Save button, and auto-save with conflict protection.",
